@@ -120,7 +120,7 @@ def findPlaylist(user, search):
         if len(possiblelists) == 0 and (data is None or len(data) == 0):
             print Messages['NoResults'].substitute(
                                       {'search': 'User %s' % user})
-            sys.exit(0)
+            sys.exit(1)
 
         dom = parseString(data)
         if start == 1:
@@ -145,7 +145,7 @@ def findPlaylist(user, search):
     if len(possiblelists) < 1:
         print Messages['NoResults'].substitute(
                     {'search': 'user %s matching "%s"' % (user, search)})
-        sys.exit(0)
+        sys.exit(1)
     elif len(possiblelists) == 1:
         return possiblelists[0]
 
@@ -256,7 +256,7 @@ def numberselect(minnum, maxnum, otherchars=None):
             if maxnum >= sel > 0:
                 return sel
             elif sel == 0:
-                sys.exit(2)
+                sys.exit(1)
             print Messages['NumberOpt'].substitute({'low_num': minnum,
                                                  'high_num': maxnum})
             sel = -1
@@ -563,12 +563,14 @@ def parseArgs():
             default='Udacity',
             help=("""Username of the youtube user whose playlists will be
  searched"""))
-    return parser.parse_args()
-
+    return parser 
 
 def main():
     global args
-    args = parseArgs()
+    parser = parseArgs()
+    args = parser.parse_args()
+    if not vars(args)['search'] and not vars(args)['playlist']:
+        parser.error('You must provide a search term or playlist id')
     outputfile = None
     playlist = None
     titlepos = None
