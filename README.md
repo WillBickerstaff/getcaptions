@@ -38,9 +38,6 @@ list of terms.
 
 Valid arguments when creating the class instance or running query are:
 
- - user *required* The youtube users name whose playlists will be searched
- - search *optional* A space separated list of search terms
-
 
     playlists = PlayListSearch(user='someuser', search='some search terms')
     playlists.query()
