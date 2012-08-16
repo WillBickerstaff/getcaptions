@@ -41,6 +41,7 @@ Valid arguments when creating the class instance or running query are:
  - user *required* The youtube users name whose playlists will be searched
  - search *optional* A space separated list of search terms
 
+
     playlists = PlayListSearch(user='someuser', search='some search terms')
     playlists.query()
 
@@ -71,8 +72,10 @@ being the first video in the list.
 To perform a `query()` the playlistid must be set either when creating the
 class instance or running `query()`
 
+
     vids = PlaylistVideoSearch(id='videoid')
     vids.query()
+
 
 **CaptionSearch**
 
@@ -93,6 +96,7 @@ instance or running `query()`
 
     caption_tracks = CaptionSearch(id='videoid')
     caption_tracks.query()
+
 
 **GetCaptions**
 
