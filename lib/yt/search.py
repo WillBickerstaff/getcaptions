@@ -81,6 +81,8 @@ class PlaylistSearch(Search):
         while ((self.hits < super(PlaylistSearch, self).MAXRESULTS)
                           and (self.totalresults > self.start)):
               dom = super(PlaylistSearch, self).query(url, {'v': Search.API})
+              if dom is None:
+                  return
               self.__matchLists(dom)
               self.hits = len(self.results)
               if self.hits < super(PlaylistSearch, self).MAXRESULTS:
@@ -147,11 +149,40 @@ class CaptionSearch(Search):
 
     def __init__(self, **kwargs):
         super(CaptionSearch, self).__init__()
+        self.videoid = None
+        self.__checkkwargs(**kwargs)
+    
 
+    def reset(self):
+        self.videoid = None
+        super(CaptionSearch, self).reset()
+
+
+    def __checkkwargs(self, **kwargs):
+        for k in kwargs:
+            k = k.lower()
+            if k in ['id', 'videoid']:
+                self.videoid = kwargs[k]
+                continue
 
     def query(self, videoid):
+        if self.videoid is None or len(self.videoid) == 0:
+            raise ValueError('A valid videoid must be given to find '
+                             'caption tracks.')
         dom = super(CaptionSearch, self).query(CaptionSearch.URL,
                                                {'type': 'list', 'v': videoid})
+        if dom is None:
+            return
+        self.__parseList(dom)
+        return self.results
+
+    def __parseList(self, queryresult):
+        tracks = queryresult.getElementsByTagName('track')
+        for track in tracks:
+            captiontrack = {}
+            captiontrack['name'] = track.getAttribute('name')
+            captiontrack['lang'] = track.getAttribute('lang_code')
+            self.results.append(captiontrack)
 
 
 class CaptionTrackSearch(Search):
@@ -179,7 +210,3 @@ class PlaylistVideoSearch(Search):
     def query(self, playlistid):
         url = PlaylistVideoSearch.URL.substitute({'playlist': playlistid})
         dom = super(PlaylistVideoSearch, self).query(url)
-
-x = PlaylistSearch(user='udacity', search='cs101 unit 4')
-y = x.query()
-for z in y: print z
