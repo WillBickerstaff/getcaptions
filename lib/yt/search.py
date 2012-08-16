@@ -62,6 +62,8 @@ class PlaylistSearch(Search):
                 self.user = kwargs[k]
                 continue
             if k in ['search', 'searchterms']:
+                if self.searchterms != kwargs[k]:
+                    self.reset()
                 self.searchterms = kwargs[k]
                 continue
 
@@ -83,7 +85,8 @@ class PlaylistSearch(Search):
               self.hits = len(self.results)
               if self.hits < super(PlaylistSearch, self).MAXRESULTS:
                   time.sleep(0.2)  # Lets not hammer the yt servers
-        if len self.results > 0:
+        if len(self.results) > 0:
+            self.results.sort(key=lambda x: x['score'], reverse=True)
             return self.results
 
 
@@ -103,15 +106,30 @@ class PlaylistSearch(Search):
     def __score(self, title):
         if self.searchterms is None or len(self.searchterms) == 0:
             return 1
-        terms = self.searchterms.split()
+        title = title.lower()
+        terms = self.__createSearchTerms()
         score = 0
         multiplier = 0
         for term in terms:
+            term = term.lower()
             if term in title:
                 if score == 0:
                     score = 1
                 multiplier += 1
         return score * multiplier
+
+    
+    def __createSearchTerms(self):
+        """ Join single characters in to the preceeding term """
+        terms = self.searchterms.split()
+        retTerms = []
+        for i, term in enumerate(terms):
+            if len(terms[i+1]) == 1:
+                retTerms.append("%s %s" % (term, terms[i+1]))
+                terms.pop(i+1)
+            else:
+                retTerms.append(term)
+        return retTerms
 
 
     def __parseList(self, playlist):
@@ -142,7 +160,7 @@ class CaptionTrackSearch(Search):
 
     def __init__(self, **kwargs):
         super(CaptionTrackSearch, self).__init__()
-
+        
 
     def query(self, videoid, name, lang):
         dom =super(CaptionTrackSearch, self).query(CaptionTrackSearch.URL,
@@ -161,3 +179,7 @@ class PlaylistVideoSearch(Search):
     def query(self, playlistid):
         url = PlaylistVideoSearch.URL.substitute({'playlist': playlistid})
         dom = super(PlaylistVideoSearch, self).query(url)
+
+x = PlaylistSearch(user='udacity', search='cs101 unit 4')
+y = x.query()
+for z in y: print z
