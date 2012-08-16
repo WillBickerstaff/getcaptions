@@ -1,13 +1,8 @@
-oop branch
-==========
+## /lib/yt/search.py ##
 
-This Branch contains a more modular implementation of pyPlayList cap which is
-currently under development. When complete it will superseed and replace master.
-
-###/lib/yt/search.py###
 This file contains 5 classes for retrieving playlist information from youtube
 
-**Search**
+### Search ###
 
 The Base class for the other search classes, should not be used directly
 
@@ -16,7 +11,7 @@ The Base class for the other search classes, should not be used directly
 to retrieve the next 20 matches run `query()` again
 
 The class instances can be created with parameters or they can be set when
-calling query:
+calling `query()`:
 
 the most recent results from `query()` are also available in the 
 playlist.results attribute.
@@ -29,14 +24,12 @@ or running `query()` is left as is.
 All classes will raise a ValueError if a required argument is missing when
 running `query()` **TODO** Make this do something better
 
-**PlayListSearch**
+### PlayListSearch ###
 
 This class searches for all playlists, it requires a youtube user name for
 the user whose playlists are going to be searched and an optional search
 term parameter by which to score the results which is a space separated
 list of terms.
-
-Valid arguments when creating the class instance or running query are:
 
 
     playlists = PlayListSearch(user='someuser', search='some search terms')
@@ -53,8 +46,10 @@ if search terms are given then only playlists whose title match at least one
 search term are returned, without search terms all of the users playlists are
 returned with a score of 1.
 
+The results list is ordered by the search score with the highest score first
+in the list
 
-**PlaylistVideoSearch**
+### PlaylistVideoSearch ###
 
 PlaylistVideoSearch retrieves all videos in a playlist. The values in the
 results list of dicts or return value of `query()` are keyed:
@@ -74,7 +69,7 @@ class instance or running `query()`
     vids.query()
 
 
-**CaptionSearch**
+### CaptionSearch ###
 
 CaptionSearch searches for all available caption tracks for a youtube
 video. The results list of dicts is keyed:
@@ -95,7 +90,7 @@ instance or running `query()`
     caption_tracks.query()
 
 
-**GetCaptions**
+### GetCaptions ###
 
 GetCaptions retrieves the text of the caption track. The results attribute
 and return value of query are a single string, no encoding or replacement of 
@@ -104,7 +99,7 @@ in timedtext, just concatenated into one string with all the time codings remove
 
 GetCaptions requires lang, name and videoid to be passed either when creating
 the class instance or running `query()`. All can be obtained by using a 
-CaptionSearch object with the reuired video.
+CaptionSearch object with the required video.
 
 
     captions = GetCaptions(lang='en', name='English', id='videoid')
