@@ -3,6 +3,7 @@ import time
 from string import Template
 from xml.dom.minidom import parseString
 
+
 class Search(object):
     MAXRESULTS = 20
     API = 2
@@ -24,6 +25,7 @@ class Search(object):
             data['start-index'] = self.start
             data['max-results'] = Search.MAXRESULTS
             querydata = urllib.urlencode(data)
+            print  '%s?%s' % (url, querydata)
             request = urllib2.Request('%s?%s' % (url, querydata))
             content = urllib2.urlopen(request).read()
             if self.__hascontent(content):
@@ -38,6 +40,7 @@ class Search(object):
             self.totalresults = int(content.getElementsByTagName(
                             'openSearch:totalResults')[0].childNodes[0].data)
 
+
     def __hascontent(self, content):
         if content is not None and len(content) > 1:
             return True
@@ -46,14 +49,14 @@ class Search(object):
 
 class PlaylistSearch(Search):
     URL = Template('http://gdata.youtube.com/feeds/api/users/$user/playlists')
-    
+
 
     def __init__(self, **kwargs):
         super(PlaylistSearch, self).__init__()
         self.user = ''
         self.searchterms = ''
-
         self.__checkkwargs(**kwargs)
+
 
     def __checkkwargs(self, **kwargs):
         for k in kwargs:
@@ -75,7 +78,7 @@ class PlaylistSearch(Search):
         if not self.user:
             raise Valuerror('A valid youtube user must be given to search for '
                             'playlists.')
-        
+
         self.hits = 0
         self.results = []
         while ((self.hits < super(PlaylistSearch, self).MAXRESULTS)
@@ -99,11 +102,13 @@ class PlaylistSearch(Search):
             if listdict['score'] > 0:
                 self.results.append(listdict)
 
+
     def __matchSearch(self, playlist):
         listdict = self.__parseList(playlist)
         assert all([len(listdict['title']) > 0, len(listdict['id']) > 0])
         listdict['score'] = self.__score(listdict['title'])
         return listdict
+
 
     def __score(self, title):
         if self.searchterms is None or len(self.searchterms) == 0:
@@ -120,7 +125,7 @@ class PlaylistSearch(Search):
                 multiplier += 1
         return score * multiplier
 
-    
+
     def __createSearchTerms(self):
         """ Join single characters in to the preceeding term """
         terms = self.searchterms.split()
@@ -141,7 +146,7 @@ class PlaylistSearch(Search):
         listdict['id'] = (playlist.getElementsByTagName('yt:playlistId')[0].
                                                         childNodes[0].data)
         return listdict
-                                                           
+
 
 class CaptionSearch(Search):
     URL = 'http://www.youtube.com/api/timedtext'
@@ -151,7 +156,7 @@ class CaptionSearch(Search):
         super(CaptionSearch, self).__init__()
         self.videoid = None
         self.__checkkwargs(**kwargs)
-    
+
 
     def reset(self):
         self.videoid = None
@@ -165,6 +170,7 @@ class CaptionSearch(Search):
                 self.videoid = kwargs[k]
                 continue
 
+
     def query(self, videoid):
         if self.videoid is None or len(self.videoid) == 0:
             raise ValueError('A valid videoid must be given to find '
@@ -175,6 +181,7 @@ class CaptionSearch(Search):
             return
         self.__parseList(dom)
         return self.results
+
 
     def __parseList(self, queryresult):
         tracks = queryresult.getElementsByTagName('track')
@@ -191,7 +198,7 @@ class CaptionTrackSearch(Search):
 
     def __init__(self, **kwargs):
         super(CaptionTrackSearch, self).__init__()
-        
+
 
     def query(self, videoid, name, lang):
         dom =super(CaptionTrackSearch, self).query(CaptionTrackSearch.URL,
@@ -205,8 +212,48 @@ class PlaylistVideoSearch(Search):
 
     def __init__(self, **kwargs):
         super(PlaylistVideoSearch, self).__init__()
+        self.reset()
+        self.__checkkwargs(**kwargs)
 
 
-    def query(self, playlistid):
-        url = PlaylistVideoSearch.URL.substitute({'playlist': playlistid})
-        dom = super(PlaylistVideoSearch, self).query(url)
+    def reset(self):
+        self.playlistid = None
+        super(PlaylistVideoSearch, self).reset()
+
+
+    def __checkkwargs(self, **kwargs):
+        for k in kwargs:
+            k = k.lower()
+            if k in ['id', 'playlistid']:
+                self.playlistid = kwargs[k]
+
+
+    def query(self, **kwargs):
+        url = PlaylistVideoSearch.URL.substitute({'playlist': self.playlistid})
+
+        self.__checkkwargs(**kwargs)
+        if self.playlistid is None or len(self.playlistid) == 0:
+            raise ValueError('A valid playlist id must be given to retrieve '
+                             'videos.')
+        while True:
+            dom = super(PlaylistVideoSearch, self).query(url,{'v': Search.API})
+            if dom is None:
+                break
+            self.__parseList(dom)
+            time.sleep(0.2)  # Lets not hammer the yt servers
+        self.results.sort(key=lambda x: x['position'], reverse=False)
+        return self.results
+
+
+    def __parseList(self, queryresult):
+        vids = queryresult.getElementsByTagName('entry')
+        for vid in vids:
+            video = {}
+            print vid
+            video['id'] = (vid.getElementsByTagName('yt:videoid')[0].
+                                                            childNodes[0].data)
+            video['title'] = (vid.getElementsByTagName('title')[0].
+                                                            childNodes[0].data)
+            video['position'] = int(vid.getElementsByTagName('yt:position')[0].
+                                                            childNodes[0].data)
+            self.results.append(video)
