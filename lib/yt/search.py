@@ -22,10 +22,7 @@ class Search(object):
 
     def query(self, url, data={}):
         if self.start < self.totalresults > 0:
-            data['start-index'] = self.start
-            data['max-results'] = Search.MAXRESULTS
             querydata = urllib.urlencode(data)
-            print  '%s?%s' % (url, querydata)
             request = urllib2.Request('%s?%s' % (url, querydata))
             content = urllib2.urlopen(request).read()
             if self.__hascontent(content):
@@ -37,9 +34,12 @@ class Search(object):
 
     def __setTotalResults(self, content):
         if self.start == 1:
-            self.totalresults = int(content.getElementsByTagName(
+            if len(content.getElementsByTagName('openSearch:totalResults')) > 0:
+                self.totalresults = int(content.getElementsByTagName(
                             'openSearch:totalResults')[0].childNodes[0].data)
-
+            else:
+                self.totalresults = 1000
+            
 
     def __hascontent(self, content):
         if content is not None and len(content) > 1:
@@ -83,7 +83,11 @@ class PlaylistSearch(Search):
         self.results = []
         while ((self.hits < super(PlaylistSearch, self).MAXRESULTS)
                           and (self.totalresults > self.start)):
-              dom = super(PlaylistSearch, self).query(url, {'v': Search.API})
+              dom = super(PlaylistSearch, self).query(url,
+                                              {'v': Search.API,
+                                               'start-index': self.start,
+                                               'max-results': Search.MAXRESULTS,
+                                               'v': Search.API})
               if dom is None:
                   return
               self.__matchLists(dom)
@@ -131,7 +135,7 @@ class PlaylistSearch(Search):
         terms = self.searchterms.split()
         retTerms = []
         for i, term in enumerate(terms):
-            if len(terms[i+1]) == 1:
+            if len(terms[i+1]) < 3:
                 retTerms.append("%s %s" % (term, terms[i+1]))
                 terms.pop(i+1)
             else:
@@ -171,12 +175,14 @@ class CaptionSearch(Search):
                 continue
 
 
-    def query(self, videoid):
+    def query(self, **kwargs):
+        self.__checkkwargs(**kwargs)
         if self.videoid is None or len(self.videoid) == 0:
             raise ValueError('A valid videoid must be given to find '
                              'caption tracks.')
         dom = super(CaptionSearch, self).query(CaptionSearch.URL,
-                                               {'type': 'list', 'v': videoid})
+                                               {'type': 'list',
+                                                'v': self.videoid})
         if dom is None:
             return
         self.__parseList(dom)
@@ -186,25 +192,64 @@ class CaptionSearch(Search):
     def __parseList(self, queryresult):
         tracks = queryresult.getElementsByTagName('track')
         for track in tracks:
-            captiontrack = {}
+            captiontrack = {'videoid': self.videoid}
             captiontrack['name'] = track.getAttribute('name')
             captiontrack['lang'] = track.getAttribute('lang_code')
             self.results.append(captiontrack)
+            self.results.sort(key=lambda x: x['lang'], reverse=False)
 
 
-class CaptionTrackSearch(Search):
+class GetCaptions(Search):
     URL =  'http://video.google.com/timedtext'
 
 
     def __init__(self, **kwargs):
-        super(CaptionTrackSearch, self).__init__()
+        super(GetCaptions, self).__init__()
+        self.reset()
+        self.__checkkwargs(**kwargs)
+
+    def __checkkwargs(self, **kwargs):
+        for k in kwargs:
+            k = k.lower()
+            if 'lang' in k:
+                self.lang = kwargs[k]
+                continue
+            if k in ['videoid', 'id']:
+                self.videoid = kwargs[k]
+                continue
+            if k == 'name':
+                self.name = kwargs[k]
+                continue
 
 
-    def query(self, videoid, name, lang):
-        dom =super(CaptionTrackSearch, self).query(CaptionTrackSearch.URL,
-                                                   {'lang': lang,
-                                                    'v': videoid,
-                                                    'name': name})
+    def reset(self):
+        super(GetCaptions, self).reset()
+        self.videoid = None
+        self.lang = None
+        self.name = None
+
+
+    def query(self, **kwargs):
+        self.__checkkwargs(**kwargs)
+        if all([self.videoid is None or len(self.videoid) == 0,
+                self.lang is None or len(self.lang) == 0,
+                self.name is None or len(self.name) == 0]):
+            print self.videoid, self.lang, self.name
+            raise ValueError('videoid, lang and name must all be '
+                             'provided to retrieve captions.')
+
+        dom = super(GetCaptions, self).query(GetCaptions.URL, {'lang': self.lang,
+                                                             'v': self.videoid,
+                                                             'name': self.name})
+        self.__parseList(dom)
+        return self.results
+
+    def __parseList(self, queryresult):
+        captiontext = []
+        captions = queryresult.getElementsByTagName('text')
+        for line in captions:
+            captiontext.append(line.childNodes[0].data)
+        self.results = ' '.join(captiontext)
 
 class PlaylistVideoSearch(Search):
     URL = Template('http://gdata.youtube.com/feeds/api/playlists/$playlist')
@@ -236,7 +281,10 @@ class PlaylistVideoSearch(Search):
             raise ValueError('A valid playlist id must be given to retrieve '
                              'videos.')
         while True:
-            dom = super(PlaylistVideoSearch, self).query(url,{'v': Search.API})
+            dom = super(PlaylistVideoSearch, self).query(url,
+                                             {'v': Search.API,
+                                              'start-index': self.start,
+                                              'max-results': Search.MAXRESULTS})
             if dom is None:
                 break
             self.__parseList(dom)
@@ -249,7 +297,6 @@ class PlaylistVideoSearch(Search):
         vids = queryresult.getElementsByTagName('entry')
         for vid in vids:
             video = {}
-            print vid
             video['id'] = (vid.getElementsByTagName('yt:videoid')[0].
                                                             childNodes[0].data)
             video['title'] = (vid.getElementsByTagName('title')[0].
