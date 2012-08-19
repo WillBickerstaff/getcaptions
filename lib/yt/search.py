@@ -135,7 +135,7 @@ class PlaylistSearch(Search):
         terms = self.searchterms.split()
         retTerms = []
         for i, term in enumerate(terms):
-            if len(terms[i+1]) < 3:
+            if i+1 < len(terms) and len(terms[i+1]) < 3:
                 retTerms.append("%s %s" % (term, terms[i+1]))
                 terms.pop(i+1)
             else:
