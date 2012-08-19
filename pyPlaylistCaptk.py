@@ -79,6 +79,8 @@ class Application(Frame):
         self.yScroll["command"] = self.listbox.yview
         self.markdownlabel = Label(text="Markdown")
         self.markdownarea = Text(wrap=WORD)
+        self.copymarkdown = Button(text="Copy To Clipboard", 
+                                  command=self.__copyMarkdown)
 
     def __vidButtons(self):
         self.modtitle = Button(text='Modify titles', command=self.__modTitles)
@@ -115,10 +117,13 @@ class Application(Frame):
         self.markdownarea.grid(row=6, column=0, columnspan=5,
                                padx=self.padx, pady=self.pady,
                                sticky=N + S + E + W)
+        self.copymarkdown.grid(row=7, column=2, columnspan=3, sticky=E,
+                          padx=self.padx, pady=self.pady)
 
     def __rmMarkdown(self):
         self.markdownarea.grid_forget()
         self.markdownlabel.grid_forget()
+        self.copymarkdown.grid_forget()
 
     def __searchPlaylist(self):
         self.__getvids(self.playlist_id.get())
@@ -246,6 +251,10 @@ class Application(Frame):
             if c not in validchars:
                 return False
         return True
+
+    def __copyMarkdown(self):
+        self.markdownarea.clipboard_clear()
+        self.markdownarea.clipboard_append(self.markdownarea.get(1.0, END))
 
 app = Application()
 app.master.title("pyPlaylistCaptk")
