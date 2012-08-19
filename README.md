@@ -7,7 +7,7 @@ only searching playlists, and retrieving videos.
 ###TODO###
 
  - Modify titles
- - Get captions
+ - Get captions (Select which caption track)
  - Convert to markdown & mathJax
  - Save output / open in external editor
  

@@ -5,6 +5,7 @@ import tkMessageBox
 import string
 import lib.yt.search
 from urllib2 import HTTPError
+from time import sleep
 
 
 class Application(Frame):
@@ -148,11 +149,11 @@ class Application(Frame):
                     title = playlist['title']
                     break
 
-        self.__status.config("Getting videos for %s" % title)
+        self.__status("Getting videos for %s" % title)
         self.listbox.delete(0, END)
         self.vids = lib.yt.search.PlaylistVideoSearch(id=playlistid).query()
         self.__populateResults([v['title'] for v in self.vids])
-        self.__status.config("%d Videos found" % len(self.vids))
+        self.__status("%d Videos found" % len(self.vids))
         self.__vidButtons()
 
     def __status(self, msg):
@@ -160,7 +161,33 @@ class Application(Frame):
         self.status.update_idletasks()
 
     def __getCaptions(self):
-        pass
+        preftrack = {'name': None, 'lang': None}
+        self.listbox.delete(0, END)
+
+        for i, vid in enumerate(self.vids):
+            nocapmsg = '[%02d] --NO CAPTIONS-- %s' % (i + 1, vid['title'])
+            tracks = lib.yt.search.CaptionSearch(id=vid['id']).query()
+            if len(tracks) == 0:
+                self.__status('No captions available for %s' %
+                              self.vids[i]['title'])
+                self.listbox.insert(END, nocapmsg)
+            if len(tracks) > 0:
+                msg = '%02d of %02d Getting captions for %s' % (
+                                i + 1, len(self.vids), self.vids[i]['title'])
+                self.__status(msg)
+                self.listbox.insert(END, msg)
+                self.vids[i]['text'] = '## %s ##\n' % vid['title']
+                captiontext = lib.yt.search.GetCaptions(id=vid['id'],
+                                        lang=tracks[0]['lang'],
+                                        name=tracks[0]['name']).query()
+                sleep(0.2)
+                msg = nocapmsg
+                if captiontext is not None and len(captiontext) > 0:
+                    self.vids[i]['text'] += captiontext
+                    msg = '[%02d] --DONE-- %s' % (i + 1, vid['title'])
+                self.listbox.delete(END, END)
+                self.listbox.insert(END, msg)
+        self.__status('')
 
     def __modTitles(self):
         pass
