@@ -1,6 +1,6 @@
 from Tkinter import (Button, Listbox, Label, Entry, Frame, Scrollbar, DISABLED,
                      NORMAL, END, N, S, E, W, VERTICAL, HORIZONTAL, SUNKEN,
-                     SINGLE)
+                     SINGLE, Text, WORD)
 import tkMessageBox
 import string
 import lib.yt.search
@@ -76,6 +76,8 @@ class Application(Frame):
         self.listbox.grid(row=3, column=0, sticky=N + S + E + W, columnspan=5)
         self.xScroll["command"] = self.listbox.xview
         self.yScroll["command"] = self.listbox.yview
+        self.markdownlabel = Label(text="Markdown")
+        self.markdownarea = Text(wrap=WORD)
 
     def __vidButtons(self):
         self.modtitle = Button(text='Modify titles', command=self.__modTitles)
@@ -95,6 +97,7 @@ class Application(Frame):
         searchterms = self.search_terms.get()
         self.resultSelect.config(state=DISABLED)
         self.__rmVidButtons()
+        self.__rmMarkdown()
         if not self.__validparams(user, searchterms, playlist):
             return False
 
@@ -103,6 +106,18 @@ class Application(Frame):
             return
 
         self.__searchUser(user, searchterms)
+
+    def __showMarkdown(self):
+        self.markdownlabel.grid(row=5, column=0,
+                                    padx=self.padx, pady=self.pady,
+                                    sticky=W)
+        self.markdownarea.grid(row=6, column=0, columnspan=5,
+                               padx=self.padx, pady=self.pady,
+                               sticky=N + S + E + W)
+
+    def __rmMarkdown(self):
+        self.markdownarea.grid_forget()
+        self.markdownlabel.grid_forget()
 
     def __searchPlaylist(self):
         self.__getvids(self.playlist_id.get())
@@ -157,13 +172,16 @@ class Application(Frame):
         self.__vidButtons()
 
     def __status(self, msg):
+        if len(msg) > 75:
+            msg = msg[:70] + '...'
         self.status.config(text=msg)
         self.status.update_idletasks()
 
     def __getCaptions(self):
         preftrack = {'name': None, 'lang': None}
         self.listbox.delete(0, END)
-
+        self.markdownarea.delete(0, END)
+        self.__showMarkdown()
         for i, vid in enumerate(self.vids):
             nocapmsg = '[%02d] --NO CAPTIONS-- %s' % (i + 1, vid['title'])
             tracks = lib.yt.search.CaptionSearch(id=vid['id']).query()
@@ -183,10 +201,13 @@ class Application(Frame):
                 sleep(0.2)
                 msg = nocapmsg
                 if captiontext is not None and len(captiontext) > 0:
-                    self.vids[i]['text'] += captiontext
+                    self.vids[i]['text'] += captiontext + '\n\n'
                     msg = '[%02d] --DONE-- %s' % (i + 1, vid['title'])
                 self.listbox.delete(END, END)
                 self.listbox.insert(END, msg)
+            self.listbox.see(END)
+            self.markdownarea.insert(END, self.vids[i]['text'])
+            self.markdownarea.see(END)
         self.__status('')
 
     def __modTitles(self):
