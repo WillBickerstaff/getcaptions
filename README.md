@@ -8,9 +8,11 @@ only searching playlists, and retrieving videos.
 
  - Modify titles
  - Get captions (Select which caption track)
- - Convert to markdown & mathJax
  - Save output / open in external editor
  
 
 ###/lib/yt/search.py###
 This file contains 5 classes for retrieving playlist information from youtube
+
+###/lib/markdown.py###
+Some simple markdown / mathjax conversion of unicode characters
