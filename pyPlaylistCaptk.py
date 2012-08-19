@@ -4,6 +4,7 @@ from Tkinter import (Button, Listbox, Label, Entry, Frame, Scrollbar, DISABLED,
 import tkMessageBox
 import string
 import lib.yt.search
+import lib.markdown
 from urllib2 import HTTPError
 from time import sleep
 
@@ -180,7 +181,7 @@ class Application(Frame):
     def __getCaptions(self):
         preftrack = {'name': None, 'lang': None}
         self.listbox.delete(0, END)
-        self.markdownarea.delete(0, END)
+        self.markdownarea.delete(1.0, END)
         self.__showMarkdown()
         for i, vid in enumerate(self.vids):
             nocapmsg = '[%02d] --NO CAPTIONS-- %s' % (i + 1, vid['title'])
@@ -194,14 +195,15 @@ class Application(Frame):
                                 i + 1, len(self.vids), self.vids[i]['title'])
                 self.__status(msg)
                 self.listbox.insert(END, msg)
-                self.vids[i]['text'] = '## %s ##\n' % vid['title']
+                self.vids[i]['text'] = lib.markdown.heading(vid['title'])
                 captiontext = lib.yt.search.GetCaptions(id=vid['id'],
                                         lang=tracks[0]['lang'],
                                         name=tracks[0]['name']).query()
                 sleep(0.2)
                 msg = nocapmsg
                 if captiontext is not None and len(captiontext) > 0:
-                    self.vids[i]['text'] += captiontext + '\n\n'
+                    self.vids[i]['text'] += (lib.markdown.to_ascii(captiontext)
+                                             + '\n\n')
                     msg = '[%02d] --DONE-- %s' % (i + 1, vid['title'])
                 self.listbox.delete(END, END)
                 self.listbox.insert(END, msg)
