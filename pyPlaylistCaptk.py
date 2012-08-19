@@ -13,10 +13,10 @@ class Application(Frame):
         self.padx = 3
         self.pady = 3
         self.grid()
-        self.createWidgets()
         self.results = []
         self.playlists = []
         self.vids = []
+        self.createWidgets()
 
     def createWidgets(self):
         self.__userEntryFields()
@@ -108,21 +108,18 @@ class Application(Frame):
 
     def __searchUser(self, user, searchterms):
         self.listbox.delete(0, END)
-        self.status.config(text="Searching for%splaylists by user \"%s\"" % (
-                        " \"%s\" " % searchterms if len(searchterms) else " ",
-                        user))
-        self.status.update_idletasks()
-        usrsearch = lib.yt.search.PlaylistSearch(user=user, search=searchterms)
+        self.__status("Searching for%splaylists by user \"%s\"" % (
+                      " \"%s\" " % searchterms if len(searchterms) else " ",
+                      user))
         self.playlists = []
         try:
-            self.playlists = usrsearch.query()
+            self.playlists = lib.yt.search.PlaylistSearch(user=user,
+                                                 search=searchterms).query()
         except HTTPError:
-            self.status.config(text="User %s does not exist at youtube" % user)
-            self.status.update_idletasks()
+            self.__status("User %s does not exist at youtube" % user)
             return
         if self.playlists is None or len(self.playlists) == 0:
-            self.status.config(text="Search returned no results")
-            self.status.update_idletasks()
+            self.__status("Search returned no results")
             return
         self.__populateResults([v['title'] for v in self.playlists])
         self.resultSelect.config(command=self.__getVidsFromSelected,
@@ -144,7 +141,6 @@ class Application(Frame):
 
     def __getvids(self, playlistid):
         self.resultSelect.grid_forget()
-        vidsearch = lib.yt.search.PlaylistVideoSearch(id=playlistid)
         title = playlistid
         if len(self.playlists) > 0:
             for playlist in self.playlists:
@@ -152,14 +148,16 @@ class Application(Frame):
                     title = playlist['title']
                     break
 
-        self.status.config(text="Getting videos for %s" % title)
-        self.status.update_idletasks()
+        self.__status.config("Getting videos for %s" % title)
         self.listbox.delete(0, END)
-        self.vids = vidsearch.query()
+        self.vids = lib.yt.search.PlaylistVideoSearch(id=playlistid).query()
         self.__populateResults([v['title'] for v in self.vids])
-        self.status.config(text="%d Videos found" % len(self.vids))
-        self.status.update_idletasks()
+        self.__status.config("%d Videos found" % len(self.vids))
         self.__vidButtons()
+
+    def __status(self, msg):
+        self.status.config(text=msg)
+        self.status.update_idletasks()
 
     def __getCaptions(self):
         pass
