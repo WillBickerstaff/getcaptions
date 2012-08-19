@@ -32,27 +32,14 @@
 
 <p>A utility to download caption files from all videos in a youtube playlist and convert them to markdown</p>
 
-<h1>Useage</h1>
+<p>The tkInter GUI is not fully functional, though does allow you to retrieve captions, convert to markdown and then copy to the clipboard.
 
-<h3>s, --search</h3>
-
-<p>Search term, if a playlist id is provided with -p or --playlist, then this option is ignored.</p>
-
-<h3>-p, --playlist</h3>
-
-<p>A valid youtube playlist id, if given user and search will be ignored.</p>
-
-<h3>-t, --titlepos</h3>
-
-<p>If the video title has a number of commonly separated elements e.g. "Something - Title - Something" This argument specifies at which position the module title can be found (1 being the first element), use --sep to specify how to break up the video title. If omitted you will be asked to pick a field from that best represents the title from the matching video titles unless attempts to split the title result in only 1 element.</p>
-
-<h3>--sep</h3>
-
-<p>Specifies a string that will be used to break up the video title into fields, this can help with long video titles, that have commonly separated elements and only one is required for titling the caption text, position 1 indicates the first element in the split string. The element at the given position will be converetd to a level 2 heading in the resulting markdown. Default is ' - '.</p>
-
-<h3>--user', '-u'</h3>
-
-<p>Username of the youtube user whose playlists will be searched. Default is 'Udacity'</p>
+<h3>TODO</h3>
+<ul>
+<li>Select which caption track to use if multiple tracks exist</li>
+<li>Save the output to some file</li>
+<li>Split down video titles</li>
+</ul>
       </section>
     </div>
 
