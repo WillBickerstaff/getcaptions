@@ -191,6 +191,7 @@ class Application(Frame):
         for i, vid in enumerate(self.vids):
             nocapmsg = '[%02d] --NO CAPTIONS-- %s' % (i + 1, vid['title'])
             tracks = lib.yt.search.CaptionSearch(id=vid['id']).query()
+            self.vids[i]['text'] = ''
             if len(tracks) == 0:
                 self.__status('No captions available for %s' %
                               self.vids[i]['title'])
