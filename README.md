@@ -1,3 +1,9 @@
+pyPlaylistCap
+=============
+
+pyPlaylistCap is a utility to retrieve captions from all youtube videos within a playlist and convert them to markdown.
+
+
 Tkinter branch
 ==============
 
