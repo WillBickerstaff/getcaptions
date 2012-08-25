@@ -5,6 +5,7 @@ import tkMessageBox
 import string
 import lib.yt.search
 import lib.markdown
+import lib.trackSelect
 from urllib2 import HTTPError
 from time import sleep
 
@@ -162,6 +163,8 @@ class Application(Frame):
         self.__getvids(self.playlists[selected]['id'])
 
     def __getvids(self, playlistid):
+        self.playlist_id.delete(0, END)
+        self.playlist_id.insert(0, playlistid)
         self.resultSelect.grid_forget()
         title = playlistid
         if len(self.playlists) > 0:
@@ -200,7 +203,12 @@ class Application(Frame):
                 self.__status('No captions available for %s' %
                               self.vids[i]['title'])
                 self.listbox.insert(END, nocapmsg)
-            if len(tracks) > 0:
+                
+            elif len(tracks) > 1:
+                sel = lib.trackSelect.TrackSelect(self, vid=vid, tracks=tracks)
+                tracks = [sel.result]
+
+            if len(tracks) == 1:
                 msg = '%02d of %02d Getting captions for %s' % (
                                 i + 1, len(self.vids), self.vids[i]['title'])
                 self.__status(msg)

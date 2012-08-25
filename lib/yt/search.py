@@ -244,6 +244,9 @@ class CaptionSearch(Search):
             captiontrack = {'videoid': self.videoid}
             captiontrack['name'] = track.getAttribute('name')
             captiontrack['lang'] = track.getAttribute('lang_code')
+            captiontrack['lang_orig'] = track.getAttribute('lang_original')
+            captiontrack['lang_trans'] = track.getAttribute('lang_translated')
+            captiontrack['track_id'] = track.getAttribute('id')
             self.results.append(captiontrack)
             self.results.sort(key=lambda x: x['lang'], reverse=False)
 
@@ -298,7 +301,7 @@ class GetCaptions(Search):
         self.__checkkwargs(**kwargs)
         if all([self.videoid is None or len(self.videoid) == 0,
                 self.lang is None or len(self.lang) == 0,
-                self.name is None or len(self.name) == 0]):
+                self.name is None):
             print self.videoid, self.lang, self.name
             raise ValueError('videoid, lang and name must all be '
                              'provided to retrieve captions.')
