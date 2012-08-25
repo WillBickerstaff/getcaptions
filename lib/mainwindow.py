@@ -125,8 +125,8 @@ class Application(Frame):
         self.markdownlabel.grid_forget()
         self.copymarkdown.grid_forget()
 
-    def __searchPlaylist(self):
-        self.__getvids(self.playlist_id.get())
+    def __searchPlaylist(self, playlistid):
+        self.__getvids(playlistid)
 
     def __searchUser(self, user, searchterms):
         self.listbox.delete(0, END)
@@ -172,10 +172,14 @@ class Application(Frame):
 
         self.__status("Getting videos for %s" % title)
         self.listbox.delete(0, END)
-        self.vids = lib.yt.search.PlaylistVideoSearch(id=playlistid).query()
-        self.__populateResults([v['title'] for v in self.vids])
-        self.__status("%d Videos found" % len(self.vids))
-        self.__vidButtons()
+        try:
+            self.vids = lib.yt.search.PlaylistVideoSearch(id=playlistid).query()
+            self.__populateResults([v['title'] for v in self.vids])
+            self.__status("%d Videos found" % len(self.vids))
+            self.__vidButtons()
+        except HTTPError:
+            self.__status("No videos found! is %s a valid playlist?" % 
+                          playlistid)
 
     def __status(self, msg):
         if len(msg) > 75:
