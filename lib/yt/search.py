@@ -261,7 +261,10 @@ class GetCaptions(Search):
 
     """Retrieve captions from a youtube video
 
-    The retrieved captions will be stored in results as a string"""
+    The retrieved captions will be stored in results as a string.
+
+    reset() does not clear lang, name or id. It clears the results
+    and resets the search to the beginning."""
 
     URL = 'http://video.google.com/timedtext'
 
@@ -289,23 +292,6 @@ class GetCaptions(Search):
             if k == 'name':
                 self.name = kwargs[k]
                 continue
-
-    def reset(self):
-        """Reset to the just created state
-
-        Resets the public attributes of the Search class:
-        hits -> 0
-        start -> 1
-        results -> empty list
-        totalresults -> 10
-        videoid -> None
-        lang -> None
-        name -> None"""
-
-        super(GetCaptions, self).reset()
-        self.videoid = None
-        self.lang = None
-        self.name = None
 
     def query(self, **kwargs):
         """To retrieve captions all of the following must be given:
