@@ -196,7 +196,10 @@ class CaptionSearch(Search):
     """Find all available caption tracks for a video.
 
     All found caption tracks will be in results[], which will be sorted
-    alphabetically by language."""
+    alphabetically by language.
+
+    reset() does not clear the videoid, it clears all results and resets
+    the search back to the beginning."""
 
     URL = 'http://www.youtube.com/api/timedtext'
 
@@ -208,18 +211,6 @@ class CaptionSearch(Search):
         super(CaptionSearch, self).__init__()
         self.videoid = None
         self.__checkkwargs(**kwargs)
-
-    def reset(self):
-        """Reset to the just created state
-
-        Resets the public attributes of the Search class:
-        hits -> 0
-        start -> 1
-        results -> empty list
-        totalresults -> 10
-        videoid -> None"""
-        self.videoid = None
-        super(CaptionSearch, self).reset()
 
     def __checkkwargs(self, **kwargs):
         for k in kwargs:
