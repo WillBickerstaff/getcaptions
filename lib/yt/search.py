@@ -319,7 +319,10 @@ class GetCaptions(Search):
 
 class PlaylistVideoSearch(Search):
 
-    """Get the videoids of all videos in a playlist."""
+    """Get the videoids of all videos in a playlist.
+
+    reset() does not clear the playlistid, instead it clears the results
+    and resets the search to the beginning."""
 
     URL = Template('http://gdata.youtube.com/feeds/api/playlists/$playlist')
 
@@ -333,19 +336,6 @@ class PlaylistVideoSearch(Search):
         super(PlaylistVideoSearch, self).__init__()
         self.reset()
         self.__checkkwargs(**kwargs)
-
-    def reset(self):
-        """Reset to the just created state
-
-        Resets the public attributes of the Search class:
-        hits -> 0
-        start -> 1
-        results -> empty list
-        totalresults -> 10
-        playlistid -> None"""
-
-        self.playlistid = None
-        super(PlaylistVideoSearch, self).reset()
 
     def __checkkwargs(self, **kwargs):
         for k in kwargs:
