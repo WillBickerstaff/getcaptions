@@ -21,15 +21,11 @@ class Application(Frame):
         self.__createWidgets()
 
     def __createWidgets(self):
-        self.__userEntryFields()
+        self.__searchFields()
         self.__resultArea()
         self.__buttons()
 
     def __buttons(self):
-        self.search_button = Button(text="Search", command=self.__search)
-        self.search_button.grid(row=2, column=4,
-                                padx=self.padx, pady=self.pady, sticky=E)
-
         self.resultSelect = Button(text='OK', state=DISABLED)
         self.resultSelect.grid(row=5, column=4, sticky=E,
                                padx=self.padx, pady=self.pady)
@@ -39,7 +35,7 @@ class Application(Frame):
         self.__rmVidButtons()
         self.resultSelect.grid_forget()
 
-    def __userEntryFields(self):
+    def __searchFields(self):
         Label(text="User", anchor=E).grid(row=0, column=0,
                                           padx=self.padx, pady=self.pady,
                                           sticky=W)
@@ -59,6 +55,10 @@ class Application(Frame):
         self.playlist_id = Entry()
         self.playlist_id.grid(row=1, column=4, padx=self.padx, pady=self.pady,
                               sticky=W)
+        self.search_button = Button(text="Search", command=self.__search)
+        self.search_button.grid(row=2, column=4,
+                                padx=self.padx, pady=self.pady, sticky=E)
+
 
     def __resultArea(self):
         self.result_label = Label(text="Results")
