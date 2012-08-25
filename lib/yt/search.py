@@ -252,7 +252,8 @@ class GetCaptions(Search):
 
     """Retrieve captions from a youtube video
 
-    The retrieved captions will be stored in results as a string.
+    The retrieved captions will be stored in results as a UTF-8 encoded
+    string, with characters replaced with xml entity reference if needed.
 
     reset() does not clear lang, name or id. It clears the results
     and resets the search to the beginning."""

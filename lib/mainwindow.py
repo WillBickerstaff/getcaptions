@@ -18,9 +18,9 @@ class Application(Frame):
         self.results = []
         self.playlists = []
         self.vids = []
-        self.createWidgets()
+        self.__createWidgets()
 
-    def createWidgets(self):
+    def __createWidgets(self):
         self.__userEntryFields()
         self.__resultArea()
         self.__buttons()
@@ -208,7 +208,7 @@ class Application(Frame):
                 sleep(0.2)
                 msg = nocapmsg
                 if captiontext is not None and len(captiontext) > 0:
-                    self.vids[i]['text'] += (lib.markdown.to_ascii(captiontext)
+                    self.vids[i]['text'] += (lib.markdown.to_utf8(captiontext)
                                              + '\n\n')
                     msg = '[%02d] --DONE-- %s' % (i + 1, vid['title'])
                 self.listbox.delete(END, END)
