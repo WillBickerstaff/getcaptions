@@ -6,6 +6,9 @@ from xml.dom.minidom import parseString
 
 
 class Search(object):
+
+    """Generic  definitions for search classes"""
+
     MAXRESULTS = 20
     API = 2
 
@@ -13,12 +16,30 @@ class Search(object):
         self.reset()
 
     def reset(self):
+        """Reset to the just created state
+
+        Resets the public attributes of the Search class:
+        hits -> 0
+        start -> 1
+        results -> empty list
+        totalresults -> 10"""
         self.hits = 0
         self.start = 1
         self.results = []
         self.totalresults = 10
 
     def query(self, url, data={}):
+        """Query a url with the data parameters
+
+        query takes a search url and data to query with. Query data is
+        encoded with urllib.encode and so should be provided in an appropriate
+        format.
+
+        A maximum set of 20 results per Query call is returned as
+        xml.dom.minidom document object. A subsequent call t query will return
+        the next 20 results until no more results are available in which case
+        None is returned or reset is called after which the first 20 results
+        are again returned."""
         if self.start < self.totalresults > 0:
             querydata = urllib.urlencode(data)
             request = urllib2.Request('%s?%s' % (url, querydata))
@@ -45,9 +66,26 @@ class Search(object):
 
 
 class PlaylistSearch(Search):
+
+    """Find youtube playlists
+
+    Matching playists will be available in the attribute results[]. If 
+    search terms is provided either when creating the class instance or
+    calling query then results[] will be sorted with the highest scoring
+    match appearing first in the list."""
+
     URL = Template('http://gdata.youtube.com/feeds/api/users/$user/playlists')
 
     def __init__(self, **kwargs):
+        """To find a playlist at least a username must be given, in the form
+        of a user="someuser" argument either when createing the class instance
+        or calling the query method. Optionally searchterms="some terms" can
+        also be given to reduce the number of results.
+
+        Calling reset() will not reset either of these arguments, it will
+        clear all existing search results and restart the search with the
+        same arguments."""
+
         super(PlaylistSearch, self).__init__()
         self.user = ''
         self.searchterms = ''
@@ -66,6 +104,18 @@ class PlaylistSearch(Search):
                 continue
 
     def query(self, **kwargs):
+        """To find a playlist at least a username must be given, in the form
+        of a user="someuser" argument either when createing the class instance
+        or calling the query method. Optionally searchterms="some terms" can
+        also be given to reduce the number of results.
+
+        Calling reset() will not reset either of these arguments, it will
+        clear all existing search results and restart the search with the
+        same arguments.
+
+        query returns the contents of results or None if there are no
+        matching results."""
+
         self.__checkkwargs(**kwargs)
         url = PlaylistSearch.URL.substitute({'user': self.user})
 
@@ -121,7 +171,7 @@ class PlaylistSearch(Search):
         return score * multiplier
 
     def __createSearchTerms(self):
-        """ Join single characters in to the preceeding term """
+        """Join single/double character trms  in to the preceeding term."""
         terms = self.searchterms.split()
         retTerms = []
         for i, term in enumerate(terms):
@@ -142,14 +192,32 @@ class PlaylistSearch(Search):
 
 
 class CaptionSearch(Search):
+
+    """Find all available caption tracks for a video.
+
+    All found caption tracks will be in results[], which will be sorted
+    alphabetically by language."""
+
     URL = 'http://www.youtube.com/api/timedtext'
 
     def __init__(self, **kwargs):
+        """To retrieve caption tracks a valid video id must be given
+        as id="somevideoid" or videoid="somevideid" either when creating
+        the class instance or calling the query method."""
+
         super(CaptionSearch, self).__init__()
         self.videoid = None
         self.__checkkwargs(**kwargs)
 
     def reset(self):
+        """Reset to the just created state
+
+        Resets the public attributes of the Search class:
+        hits -> 0
+        start -> 1
+        results -> empty list
+        totalresults -> 10
+        videoid -> None"""
         self.videoid = None
         super(CaptionSearch, self).reset()
 
@@ -161,6 +229,12 @@ class CaptionSearch(Search):
                 continue
 
     def query(self, **kwargs):
+        """To retrieve caption tracks a valid video id must be given
+        as id="somevideoid" or videoid="somevideid" either when creating
+        the class instance or calling the query method.
+
+        query returns the contents off results[]"""
+
         self.__checkkwargs(**kwargs)
         if self.videoid is None or len(self.videoid) == 0:
             raise ValueError('A valid videoid must be given to find '
@@ -184,9 +258,21 @@ class CaptionSearch(Search):
 
 
 class GetCaptions(Search):
+
+    """Retrieve captions from a youtube video
+
+    The retrieved captions will be stored in results as a string"""
+
     URL = 'http://video.google.com/timedtext'
 
     def __init__(self, **kwargs):
+        """To retrieve captions all of the following must be given:
+        lang="language"
+        name="trcakname"
+        id="somevideoid" or videoid="somevideoid"
+        either when creating the class instance or calling query. All of
+        this can be obtained with the CaptionSearch class."""
+
         super(GetCaptions, self).__init__()
         self.reset()
         self.__checkkwargs(**kwargs)
@@ -205,12 +291,32 @@ class GetCaptions(Search):
                 continue
 
     def reset(self):
+        """Reset to the just created state
+
+        Resets the public attributes of the Search class:
+        hits -> 0
+        start -> 1
+        results -> empty list
+        totalresults -> 10
+        videoid -> None
+        lang -> None
+        name -> None"""
+
         super(GetCaptions, self).reset()
         self.videoid = None
         self.lang = None
         self.name = None
 
     def query(self, **kwargs):
+        """To retrieve captions all of the following must be given:
+        lang="language"
+        name="trcakname"
+        id="somevideoid" or videoid="somevideoid"
+        either when creating the class instance or calling query. All of
+        this can be obtained with the CaptionSearch class.
+
+        returns a string containing the text content of the caption track."""
+
         self.__checkkwargs(**kwargs)
         if all([self.videoid is None or len(self.videoid) == 0,
                 self.lang is None or len(self.lang) == 0,
@@ -235,14 +341,32 @@ class GetCaptions(Search):
 
 
 class PlaylistVideoSearch(Search):
+
+    """Get the videoids of all videos in a playlist."""
+
     URL = Template('http://gdata.youtube.com/feeds/api/playlists/$playlist')
 
     def __init__(self, **kwargs):
+        """To retrieve videos in a playlist the playlist id must be given as
+        id="someplaylistid" or playlistid="someplaylistid" either when
+        creating the class instance or calling query(). The list of videos
+        will be stored in results[] sorted by the video order in the
+        playlist (first video, first in the list)."""
+
         super(PlaylistVideoSearch, self).__init__()
         self.reset()
         self.__checkkwargs(**kwargs)
 
     def reset(self):
+        """Reset to the just created state
+
+        Resets the public attributes of the Search class:
+        hits -> 0
+        start -> 1
+        results -> empty list
+        totalresults -> 10
+        playlistid -> None"""
+
         self.playlistid = None
         super(PlaylistVideoSearch, self).reset()
 
@@ -253,6 +377,13 @@ class PlaylistVideoSearch(Search):
                 self.playlistid = kwargs[k]
 
     def query(self, **kwargs):
+        """To retrieve videos in a playlist the playlist id must be given as
+        id="someplaylistid" or playlistid="someplaylistid" either when
+        creating the class instance or calling query(). The list of videos
+        will be stored in results[] sorted by the video order in the
+        playlist (first video, first in the list).
+
+        query() returns the contents of results[]"""
         url = PlaylistVideoSearch.URL.substitute({'playlist': self.playlistid})
 
         self.__checkkwargs(**kwargs)
