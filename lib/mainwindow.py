@@ -199,7 +199,7 @@ class Application(Frame):
             sel = lib.trackSelect.TrackSelect(self, vid=vid,
                                               tracks=tracks)
             if sel.result is None:
-                self.__status("Caption downloading aborted")
+                self.__status("skipped")
                 tracks = None
             else:
                 tracks = [sel.result[0]]
@@ -226,9 +226,12 @@ class Application(Frame):
                 self.listbox.insert(END, nocapmsg)
 
             elif len(tracks) > 1:
-                sel = self.__trackselect(vid, tracks, preftrack)
+                sel = self.__trackSelect(vid, tracks, preftrack)
                 if sel[0] is None:
-                    break
+                    msg = '[%02d] --SKIPPED-- %s' % (i + 1, vid['title'])
+                    self.listbox.insert(END, msg)
+                    self.listbox.see(END)
+                    continue
                 tracks = sel[0]
 
             if len(tracks) == 1:
@@ -259,7 +262,6 @@ class Application(Frame):
         self.markdownarea.see(END)
 
     def __prefAvailable(self, preftrack, tracks):
-        print preftrack
         if preftrack['lang'] is None:
             return None
 
