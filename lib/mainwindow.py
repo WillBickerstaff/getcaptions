@@ -60,7 +60,6 @@ class Application(Frame):
         self.search_button.grid(row=2, column=4,
                                 padx=self.padx, pady=self.pady, sticky=E)
 
-
     def __resultArea(self):
         self.result_label = Label(text="Results")
         self.result_label.grid(row=2, column=0,
@@ -176,12 +175,13 @@ class Application(Frame):
         self.__status("Getting videos for %s" % title)
         self.listbox.delete(0, END)
         try:
-            self.vids = lib.yt.search.PlaylistVideoSearch(id=playlistid).query()
+            self.vids = lib.yt.search.PlaylistVideoSearch(
+                                                    id=playlistid).query()
             self.__populateResults([v['title'] for v in self.vids])
             self.__status("%d Videos found" % len(self.vids))
             self.__vidButtons()
         except HTTPError:
-            self.__status("No videos found! is %s a valid playlist?" % 
+            self.__status("No videos found! is %s a valid playlist?" %
                           playlistid)
 
     def __status(self, msg):
@@ -203,10 +203,22 @@ class Application(Frame):
                 self.__status('No captions available for %s' %
                               self.vids[i]['title'])
                 self.listbox.insert(END, nocapmsg)
-                
+
             elif len(tracks) > 1:
-                sel = lib.trackSelect.TrackSelect(self, vid=vid, tracks=tracks)
-                tracks = [sel.result]
+                pref = self.__prefAvailable(preftrack, tracks)
+                if pref is None:
+                    sel = lib.trackSelect.TrackSelect(self, vid=vid,
+                                                      tracks=tracks)
+                    if sel.result is None:
+                        break
+                    tracks = [sel.result[0]]
+                    if preftrack['lang'] is None and sel.preflang is not None:
+                        preftrack['lang'] = sel.preflang
+                    if preftrack['name'] is None and sel.prefname is not None:
+                        preftrack['name'] = sel.prefname
+                    print preftrack
+                else:
+                    tracks = pref
 
             if len(tracks) == 1:
                 msg = '%02d of %02d Getting captions for %s' % (
@@ -229,6 +241,21 @@ class Application(Frame):
             self.markdownarea.insert(END, self.vids[i]['text'])
             self.markdownarea.see(END)
         self.__status('')
+
+    def __prefAvailable(self, preftrack, tracks):
+        print preftrack
+        if preftrack['lang'] is None:
+            return None
+
+        pref = None
+        for track in tracks:
+            if (track['lang'] == preftrack['lang'] and
+                track['name'] == preftrack['name']):
+                return [track]
+            if track['lang'] == preftrack['lang'] and pref is None:
+                pref = [track]
+
+        return pref
 
     def __modTitles(self):
         pass

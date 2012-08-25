@@ -1,5 +1,7 @@
-from Tkinter import *
+from Tkinter import (Scrollbar, Listbox, Checkbutton, Label, N, S, E, W,
+                     HORIZONTAL, VERTICAL, Button, END, IntVar, SINGLE)
 import tkSimpleDialog
+
 
 class TrackSelect(tkSimpleDialog.Dialog):
 
@@ -20,11 +22,13 @@ class TrackSelect(tkSimpleDialog.Dialog):
 
         self.padx = 3
         self.pady = 3
+        self.prefl = IntVar()
+        self.preft = IntVar()
+        self.preflang = None
+        self.prefname = None
         tkSimpleDialog.Dialog.__init__(self, master, "Select caption track")
 
     def body(self, master):
-        
-
         Label(master, text="%s contains multiple caption tracks" %
               self.vid['title']).grid(row=0, padx=self.padx, pady=self.pady,
                                       sticky=W, columnspan=5)
@@ -38,7 +42,7 @@ class TrackSelect(tkSimpleDialog.Dialog):
         self.langXscroll.grid(row=1, column=1, sticky=W + N + S)
         self.langYscroll.grid(row=2, column=0, stick=N + E + W)
 
-        self.chosenlangbut = Button(master, text="->", 
+        self.chosenlangbut = Button(master, text="->",
                                     command=self.__chooselang)
 
         self.chosenlangbut.grid(row=1, column=2, padx=self.padx,
@@ -53,10 +57,18 @@ class TrackSelect(tkSimpleDialog.Dialog):
         self.trackXscroll.grid(row=1, column=4, sticky=W + N + S)
         self.trackYscroll.grid(row=2, column=3, stick=N + E + W)
 
+        self.preflangsel = Checkbutton(master,
+                                       variable=self.prefl,
+                                       text="Set default language")
+        self.preftracksel = Checkbutton(master,
+                                        variable=self.preft,
+                                        text="Set default track name")
+        self.preflangsel.grid(row=3, column=0, sticky=W)
+        self.preftracksel.grid(row=3, column=3, sticky=W)
 
         self.__fillLangs()
 
-        return self.langsel # initial focus
+        return self.langsel  # initial focus
 
     def __fillLangs(self):
         self.langsadded = []
@@ -68,6 +80,7 @@ class TrackSelect(tkSimpleDialog.Dialog):
 
     def __chooselang(self):
         lang = self.langsadded[int(self.langsel.curselection()[0])]
+        self.langselected = lang
         self.trackoptions = []
         self.tracksel.delete(0, END)
         for track in self.tracks:
@@ -76,9 +89,13 @@ class TrackSelect(tkSimpleDialog.Dialog):
                 self.tracksel.insert(END, name)
                 self.trackoptions.append(track)
         self.tracksel.activate(0)
+        self.tracksel.selection_set(0)
 
     def apply(self):
         selected = int(self.tracksel.curselection()[0])
-        if not (len(self.trackoptions) > selected > -1):
-            selected = 0
-        self.result = self.trackoptions[selected]
+        self.result = [self.trackoptions[selected]]
+        if int(self.prefl.get()) == 1:
+            self.preflang = self.langselected
+        if int(self.preft.get()) == 1:
+            self.prefname = self.trackoptions[
+                    int(self.tracksel.curselection()[0])]['name']

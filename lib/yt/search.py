@@ -69,7 +69,7 @@ class PlaylistSearch(Search):
 
     """Find youtube playlists
 
-    Matching playists will be available in the attribute results[]. If 
+    Matching playists will be available in the attribute results[]. If
     search terms is provided either when creating the class instance or
     calling query then results[] will be sorted with the highest scoring
     match appearing first in the list."""
@@ -301,7 +301,7 @@ class GetCaptions(Search):
         self.__checkkwargs(**kwargs)
         if all([self.videoid is None or len(self.videoid) == 0,
                 self.lang is None or len(self.lang) == 0,
-                self.name is None):
+                self.name is None]):
             print self.videoid, self.lang, self.name
             raise ValueError('videoid, lang and name must all be '
                              'provided to retrieve captions.')

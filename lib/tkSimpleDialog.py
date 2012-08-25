@@ -1,11 +1,11 @@
 # From http://effbot.org/tkinterbook/tkinter-dialog-windows.htm
 
-from Tkinter import *
-import os
+from Tkinter import (Toplevel, ACTIVE, Button, Frame, LEFT)
+
 
 class Dialog(Toplevel):
 
-    def __init__(self, parent, title = None):
+    def __init__(self, parent, title=None):
 
         Toplevel.__init__(self, parent)
         self.transient(parent)
@@ -30,8 +30,8 @@ class Dialog(Toplevel):
 
         self.protocol("WM_DELETE_WINDOW", self.cancel)
 
-        self.geometry("+%d+%d" % (parent.winfo_rootx()+50,
-                                  parent.winfo_rooty()+50))
+        self.geometry("+%d+%d" % (parent.winfo_rootx() + 50,
+                                  parent.winfo_rooty() + 50))
 
         self.initial_focus.focus_set()
 
@@ -65,10 +65,10 @@ class Dialog(Toplevel):
     #
     # standard button semantics
 
-    def ok(self, event=None):
+    def ok(self):
 
         if not self.validate():
-            self.initial_focus.focus_set() # put focus back
+            self.initial_focus.focus_set()  # put focus back
             return
 
         self.withdraw()
@@ -78,7 +78,7 @@ class Dialog(Toplevel):
 
         self.cancel()
 
-    def cancel(self, event=None):
+    def cancel(self):
 
         # put focus back to the parent window
         self.parent.focus_set()
@@ -89,8 +89,8 @@ class Dialog(Toplevel):
 
     def validate(self):
 
-        return 1 # override
+        return 1  # override
 
     def apply(self):
 
-        pass # override
+        pass  # override
