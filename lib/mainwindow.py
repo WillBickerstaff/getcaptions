@@ -25,6 +25,7 @@ class Application(Frame):
         self.__searchFields()
         self.__resultArea()
         self.__buttons()
+        self.bind('<Return>', self.search_button)
 
     def __buttons(self):
         self.resultSelect = Button(text='OK', state=DISABLED)
@@ -93,6 +94,7 @@ class Application(Frame):
     def __rmVidButtons(self):
         self.modtitle.grid_remove()
         self.getcaps.grid_remove()
+        self.bind('<Return>', self.search_button)
 
     def __search(self):
         user = self.user_entry.get()
@@ -146,8 +148,7 @@ class Application(Frame):
         self.__populateResults([v['title'] for v in self.playlists])
         self.resultSelect.config(command=self.__getVidsFromSelected,
                                  state=NORMAL)
-        self.status.config(text="")
-        self.status.update_idletasks()
+        self.__status("")
         self.resultSelect.grid(row=5, column=4, sticky=E,
                                padx=self.padx, pady=self.pady)
 
@@ -156,6 +157,7 @@ class Application(Frame):
         for i, val in enumerate(values):
             self.listbox.insert(i, val)
         self.listbox.activate(0)
+        self.listbox.selection_set(0)
 
     def __getVidsFromSelected(self):
         selected = int(self.listbox.curselection()[0])
@@ -180,6 +182,7 @@ class Application(Frame):
             self.__populateResults([v['title'] for v in self.vids])
             self.__status("%d Videos found" % len(self.vids))
             self.__vidButtons()
+            self.bind('<Return>', self.getcaps)
         except HTTPError:
             self.__status("No videos found! is %s a valid playlist?" %
                           playlistid)
@@ -189,6 +192,24 @@ class Application(Frame):
             msg = msg[:70] + '...'
         self.status.config(text=msg)
         self.status.update_idletasks()
+
+    def __trackSelect(self, vid, tracks, preftrack=None):
+        pref = self.__prefAvailable(preftrack, tracks)
+        if pref is None:
+            sel = lib.trackSelect.TrackSelect(self, vid=vid,
+                                              tracks=tracks)
+            if sel.result is None:
+                self.__status("Caption downloading aborted")
+                tracks = None
+            else:
+                tracks = [sel.result[0]]
+                if preftrack['lang'] is None and sel.preflang is not None:
+                    preftrack['lang'] = sel.preflang
+                if preftrack['name'] is None and sel.prefname is not None:
+                    preftrack['name'] = sel.prefname
+        else:
+            tracks = pref
+        return tracks, preftrack
 
     def __getCaptions(self):
         preftrack = {'name': None, 'lang': None}
@@ -205,42 +226,37 @@ class Application(Frame):
                 self.listbox.insert(END, nocapmsg)
 
             elif len(tracks) > 1:
-                pref = self.__prefAvailable(preftrack, tracks)
-                if pref is None:
-                    sel = lib.trackSelect.TrackSelect(self, vid=vid,
-                                                      tracks=tracks)
-                    if sel.result is None:
-                        break
-                    tracks = [sel.result[0]]
-                    if preftrack['lang'] is None and sel.preflang is not None:
-                        preftrack['lang'] = sel.preflang
-                    if preftrack['name'] is None and sel.prefname is not None:
-                        preftrack['name'] = sel.prefname
-                    print preftrack
-                else:
-                    tracks = pref
+                sel = self.__trackselect(vid, tracks, preftrack)
+                if sel[0] is None:
+                    break
+                tracks = sel[0]
 
             if len(tracks) == 1:
-                msg = '%02d of %02d Getting captions for %s' % (
-                                i + 1, len(self.vids), self.vids[i]['title'])
-                self.__status(msg)
-                self.listbox.insert(END, msg)
-                self.vids[i]['text'] = lib.markdown.heading(vid['title'])
-                captiontext = lib.yt.search.GetCaptions(id=vid['id'],
-                                        lang=tracks[0]['lang'],
-                                        name=tracks[0]['name']).query()
-                sleep(0.2)
-                msg = nocapmsg
-                if captiontext is not None and len(captiontext) > 0:
-                    self.vids[i]['text'] += (lib.markdown.to_utf8(captiontext)
-                                             + '\n\n')
-                    msg = '[%02d] --DONE-- %s' % (i + 1, vid['title'])
-                self.listbox.delete(END, END)
-                self.listbox.insert(END, msg)
-            self.listbox.see(END)
-            self.markdownarea.insert(END, self.vids[i]['text'])
-            self.markdownarea.see(END)
+                self.__trackCaps(i, tracks, nocapmsg)
         self.__status('')
+
+    def __trackCaps(self, vidIndex, tracks, nocapmsg):
+        i = vidIndex
+        vid = self.vids[i]
+        msg = '%02d of %02d Getting captions for %s' % (
+                        i + 1, len(self.vids), self.vids[i]['title'])
+        self.__status(msg)
+        self.listbox.insert(END, msg)
+        self.vids[i]['text'] = lib.markdown.heading(vid['title'])
+        captiontext = lib.yt.search.GetCaptions(id=vid['id'],
+                                lang=tracks[0]['lang'],
+                                name=tracks[0]['name']).query()
+        sleep(0.2)
+        msg = nocapmsg
+        if captiontext is not None and len(captiontext) > 0:
+            self.vids[i]['text'] += (lib.markdown.to_utf8(captiontext)
+                                     + '\n\n')
+            msg = '[%02d] --DONE-- %s' % (i + 1, vid['title'])
+        self.listbox.delete(END, END)
+        self.listbox.insert(END, msg)
+        self.listbox.see(END)
+        self.markdownarea.insert(END, self.vids[i]['text'])
+        self.markdownarea.see(END)
 
     def __prefAvailable(self, preftrack, tracks):
         print preftrack
