@@ -25,6 +25,7 @@ class Application(Frame):
         self.__searchFields()
         self.__resultArea()
         self.__buttons()
+        self.__markdownArea()
         self.bind('<Return>', self.search_button)
 
     def __buttons(self):
@@ -66,27 +67,46 @@ class Application(Frame):
         self.result_label.grid(row=2, column=0,
                                padx=self.padx, pady=self.pady,
                                sticky=W)
+        self.resultshowbut = Button(text="View", command=self.__showResults)
+        self.resultshowbut.grid(row=2, column=1, sticky=W)
         self.yScroll = Scrollbar(orient=VERTICAL)
-        self.yScroll.grid(row=3, column=5, sticky=N + S)
-
         self.xScroll = Scrollbar(orient=HORIZONTAL)
-        self.xScroll.grid(row=4, column=0, sticky=E + W, columnspan=5)
-
         self.listbox = Listbox(xscrollcommand=self.xScroll.set,
                                 yscrollcommand=self.yScroll.set,
                                 selectmode=SINGLE)
+        self.xScroll.config(command=self.listbox.xview)
+        self.yScroll.config(command=self.listbox.yview)
+
+    def __showResults(self):
+        self.resultshowbut.config(text="Hide", command=self.__hideResults)
+        self.yScroll.grid(row=3, column=5, sticky=N + S)
+        self.xScroll.grid(row=4, column=0, sticky=E + W, columnspan=5)
         self.listbox.grid(row=3, column=0, sticky=N + S + E + W, columnspan=5)
-        self.xScroll["command"] = self.listbox.xview
-        self.yScroll["command"] = self.listbox.yview
+        self.markdownarea.config(height=10)
+
+    def __hideResults(self):
+        self.resultshowbut.config(text="View", command=self.__showResults)
+        self.yScroll.grid_forget()
+        self.xScroll.grid_forget()
+        self.listbox.grid_forget()
+        self.markdownarea.config(height=30)
+
+    def __markdownArea(self):
         self.markdownlabel = Label(text="Markdown")
-        self.markdownarea = Text(wrap=WORD)
+        self.mdyScroll = Scrollbar(orient=VERTICAL)
+        self.mdxScroll = Scrollbar(orient=HORIZONTAL)
+        self.markdownarea = Text(wrap=WORD, height=10,
+                                 yscrollcommand=self.mdyScroll.set,
+                                 xscrollcommand=self.mdxScroll.set)
         self.copymarkdown = Button(text="Copy To Clipboard",
                                   command=self.__copyMarkdown)
+        self.mdxScroll.config(command=self.markdownarea.xview)
+        self.mdyScroll.config(command=self.markdownarea.yview)
 
     def __vidButtons(self):
         self.modtitle = Button(text='Modify titles', command=self.__modTitles)
-        self.modtitle.grid(row=5, column=0, sticky=W, columnspan=2,
-                           padx=self.padx, pady=self.pady)
+        #self.modtitle.grid(row=5, column=0, sticky=W, columnspan=2,
+        #                   padx=self.padx, pady=self.pady)
         self.getcaps = Button(text="Get captions", command=self.__getCaptions)
         self.getcaps.grid(row=5, column=2, columnspan=3, sticky=E,
                           padx=self.padx, pady=self.pady)
@@ -100,6 +120,7 @@ class Application(Frame):
         user = self.user_entry.get()
         playlist = self.playlist_id.get()
         searchterms = self.search_terms.get()
+        self.__showResults()
         self.resultSelect.config(state=DISABLED)
         self.__rmVidButtons()
         self.__rmMarkdown()
@@ -119,13 +140,17 @@ class Application(Frame):
         self.markdownarea.grid(row=6, column=0, columnspan=5,
                                padx=self.padx, pady=self.pady,
                                sticky=N + S + E + W)
-        self.copymarkdown.grid(row=7, column=2, columnspan=3, sticky=E,
+        self.mdyScroll.grid(row=6, column=5, sticky=N + S)
+        self.mdxScroll.grid(row=7, column=0, sticky=E + W, columnspan=5)
+        self.copymarkdown.grid(row=8, column=2, columnspan=3, sticky=E,
                           padx=self.padx, pady=self.pady)
 
     def __rmMarkdown(self):
         self.markdownarea.grid_forget()
         self.markdownlabel.grid_forget()
         self.copymarkdown.grid_forget()
+        self.mdyScroll.grid_forget()
+        self.mdxScroll.grid_forget()
 
     def __searchPlaylist(self, playlistid):
         self.__getvids(playlistid)
@@ -237,6 +262,7 @@ class Application(Frame):
             if len(tracks) == 1:
                 self.__trackCaps(i, tracks, nocapmsg)
         self.__status('')
+        self.__hideResults()
 
     def __trackCaps(self, vidIndex, tracks, nocapmsg):
         i = vidIndex
