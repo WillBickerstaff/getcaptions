@@ -228,9 +228,9 @@ class Application(Frame):
                 tracks = None
             else:
                 tracks = [sel.result[0]]
-                if preftrack['lang'] is None and sel.preflang is not None:
+                if sel.preflang is not None:
                     preftrack['lang'] = sel.preflang
-                if preftrack['name'] is None and sel.prefname is not None:
+                if sel.prefname is not None:
                     preftrack['name'] = sel.prefname
         else:
             tracks = pref

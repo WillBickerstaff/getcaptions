@@ -317,7 +317,8 @@ class GetCaptions(Search):
         captiontext = []
         captions = queryresult.getElementsByTagName('text')
         for line in captions:
-            captiontext.append(line.childNodes[0].data)
+            if len(line.childNodes) > 0:
+                captiontext.append(line.childNodes[0].data)
         self.results = ' '.join(captiontext)
 
 
