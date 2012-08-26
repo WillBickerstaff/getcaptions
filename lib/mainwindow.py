@@ -1,3 +1,12 @@
+'''
+Created on 19 Aug 2012
+@license: MIT License <http://opensource.org/licenses/MIT>
+@copyright: 2012 Will Bickerstaff
+@author: Will Bickerstaff
+@email: will.bickerstaff@gmail.com
+'''
+
+
 from Tkinter import (Button, Listbox, Label, Entry, Frame, Scrollbar, DISABLED,
                      NORMAL, END, N, S, E, W, VERTICAL, HORIZONTAL, SUNKEN,
                      SINGLE, Text, WORD)

@@ -1,4 +1,11 @@
 #!/usr/bin/env python
+'''
+Created on 19 Aug 2012
+@license: MIT License
+@copyright: 2012 Will Bickerstaff
+@author: Will Bickerstaff
+@email: will.bickerstaff@gmail.com
+'''
 
 from lib.mainwindow import Application
 

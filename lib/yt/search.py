@@ -1,3 +1,11 @@
+'''
+Created on 16 Aug 2012
+@license: MIT License <http://opensource.org/licenses/MIT>
+@copyright: 2012 Will Bickerstaff
+@author: Will Bickerstaff
+@email: will.bickerstaff@gmail.com
+'''
+
 import urllib
 import urllib2
 import time

@@ -98,7 +98,8 @@ instance or running `query()`
 GetCaptions retrieves the text of the caption track. The results attribute
 and return value of query are a single string, no encoding or replacement of 
 any weird unicode characters is performed. It is returned exactly as it appears
-in timedtext, just concatenated into one string with all the time codings removed.
+in timedtext, just concatenated into one string with all the time codings 
+removed.
 
 GetCaptions requires lang, name and videoid to be passed either when creating
 the class instance or running `query()`. All can be obtained by using a 

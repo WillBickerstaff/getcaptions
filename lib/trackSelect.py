@@ -1,3 +1,11 @@
+'''
+Created on 25 Aug 2012
+@license: MIT License <http://opensource.org/licenses/MIT>
+@copyright: 2012 Will Bickerstaff
+@author: Will Bickerstaff
+@email: will.bickerstaff@gmail.com
+'''
+
 from Tkinter import (Scrollbar, Listbox, Checkbutton, Label, N, S, E, W,
                      HORIZONTAL, VERTICAL, Button, END, IntVar, SINGLE,
                      Frame, LEFT, ACTIVE)

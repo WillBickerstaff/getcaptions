@@ -1,4 +1,11 @@
-# From http://effbot.org/tkinterbook/tkinter-dialog-windows.htm
+'''
+ Taken from From http://effbot.org/tkinterbook/tkinter-dialog-windows.htm
+ http://effbot.org/zone/copyright.htm
+
+Created on 19 Aug 2012
+@license: HPND <http://effbot.org/zone/copyright.htm>
+@license: HPND <http://opensource.org/licenses/historical.php>
+'''
 
 from Tkinter import (Toplevel, ACTIVE, Button, Frame, LEFT)
 
