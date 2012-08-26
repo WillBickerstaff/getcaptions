@@ -281,9 +281,11 @@ class Application(Frame):
         self.__status(msg)
         self.listbox.insert(END, msg)
         self.vids[i]['text'] = lib.markdown.heading(vid['title'])
-        captiontext = lib.yt.search.GetCaptions(id=vid['id'],
+        captions = lib.yt.search.GetCaptions(id=vid['id'],
                                 lang=tracks[0]['lang'],
-                                name=tracks[0]['name']).query()
+                                name=tracks[0]['name'])
+        captions.query()
+        captiontext = captions.textOnly()
         sleep(0.2)
         msg = nocapmsg
         if captiontext is not None and len(captiontext) > 0:

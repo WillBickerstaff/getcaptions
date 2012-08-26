@@ -256,7 +256,7 @@ class CaptionSearch(Search):
             captiontrack['lang_trans'] = track.getAttribute('lang_translated')
             captiontrack['track_id'] = track.getAttribute('id')
             self.results.append(captiontrack)
-            self.results.sort(key=lambda x: x['lang'], reverse=False)
+        self.results.sort(key=lambda x: x['lang'], reverse=False)
 
 
 class GetCaptions(Search):
@@ -322,12 +322,40 @@ class GetCaptions(Search):
         return self.results
 
     def __parseList(self, queryresult):
-        captiontext = []
         captions = queryresult.getElementsByTagName('text')
         for line in captions:
+            caption = {'start': '', 'end': '', 'text': '',
+                   'startsec': 0.0, 'endsec': 0.0}
+            start = float(line.getAttribute('start'))
+            end = start + float(line.getAttribute('dur'))
+            caption['startsec'] = start
+            caption['endsec'] = end
+            caption['start'] = GetCaptions.secToSRTTime(start)
+            caption['end'] = GetCaptions.secToSRTTime(end)
             if len(line.childNodes) > 0:
-                captiontext.append(line.childNodes[0].data)
-        self.results = ' '.join(captiontext)
+                caption['text'] = line.childNodes[0].data
+            self.results.append(caption)
+        self.results.sort(key=lambda x: x['startsec'], reverse=False)
+
+    def textOnly(self):
+        if len(self.results) > 0:
+            return ' '.join([c['text'] for c in self.results])
+
+    @staticmethod
+    def secToSRTTime(time):
+        hour = 3600
+        minute = 60
+        tleft = time
+        hrs = int(tleft / hour)
+        tleft -= (hrs * hour)
+        mins = int(tleft / minute)
+        tleft -= (mins * minute)
+        secs = int(tleft)
+        tleft -= (secs)
+        tleft = int(tleft * 1000)
+        tcode = '%02d:%02d:%02d,%03d' % (hrs, mins, secs, tleft)
+        return tcode
+
 
 
 class PlaylistVideoSearch(Search):
