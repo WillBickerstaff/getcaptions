@@ -104,10 +104,12 @@ and return value of query is a list of dicts:
  - 'endsec' The end second of the caption as a float
  - 'text' The caption text
  
-**textOnly()** concatenates all of the caption text into a single string,
+`textOnly()` concatenates all of the caption text into a single string,
 no encoding or replacement of any weird unicode characters is performed. It is returned exactly as it appears
 in timedtext, just concatenated into one string with all the time codings 
 removed.
+
+`srt()` returns a properly formatted SRT string for all captions in the video.
 
 A static method `GetCaptions.toSRTTime(float)` is provided in this class which
 converts a float into an string formatted SRT timecode.

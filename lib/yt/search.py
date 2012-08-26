@@ -341,6 +341,16 @@ class GetCaptions(Search):
         if len(self.results) > 0:
             return ' '.join([c['text'] for c in self.results])
 
+    def srt(self):
+        srt = []
+        for num, caption in enumerate(self.results):
+            line = '%d\n%s --> %s\n%s\n' % (num + 1,
+                                              caption['start'],
+                                              caption['end'],
+                                              caption['text'])
+            srt.append(line)
+        return '\n'.join(srt)
+
     @staticmethod
     def secToSRTTime(time):
         hour = 3600
