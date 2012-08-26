@@ -76,7 +76,10 @@ video. The results list of dicts is keyed:
 
  - 'videoid' The youtube videoid for which this caption track applies
  - 'lang' The language of the caption track
- - 'name' The name of the caption track
+ - 'name' The name of the caption track (this can often be empty)
+ - 'lang-orig' The native language of the track
+ - 'lang-trans' The translated language of the track
+ - 'track_id' The track id (Also often empty or not unique)
 
 All three of these are required for GetCaptions
 
