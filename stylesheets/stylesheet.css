@@ -324,6 +324,10 @@ footer a:hover {
   color: #444;
 }
 
+.centered-image {
+text-align: center;
+}
+
 /* MISC */
 .clearfix:after {
   clear: both;
